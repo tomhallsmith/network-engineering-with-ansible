@@ -1,0 +1,3 @@
+ansible_ssh_extra_args: -oKexAlgorithms=+diffie-hellman-group1-sha1 -c aes256-cbc
+ansible_connection: network_cli
+ansible_network_os: ios

@@ -1,0 +1,44 @@
+---
+
+- name: router baseline configuration
+  hosts: routers
+  gather_facts: false
+  tasks:
+    - name: configure ntp
+      ios_ntp:
+        server: 178.18.123.148
+        source_int: FastEthernet0/0
+        logging: false
+        state: present
+    - name: configure dns servers
+      ios_system:
+        name_servers:
+          - 8.8.8.8
+          - 8.8.4.4
+        lookup_enabled: yes
+        lookup_source: FastEthernet0/0
+    - name: Configure static default route
+      ios_static_route:
+        prefix: 0.0.0.0
+        mask: 0.0.0.0
+        next_hop: 192.168.1.254
+        vrf: management
+        interface: FastEthernet0/0
+        state: present
+
+- name: switch baseline configuration
+  hosts: switches
+  gather_facts: false
+  tasks:
+    - name: configure ntp
+      nxos_ntp:
+        server: 178.18.123.148
+        source_int: mgmt0
+        state: present
+    - name: configure dns
+      nxos_system:
+        name_servers:
+          - {server: 8.8.8.8, vrf: mgmt}
+          - {server: 8.8.4.4, vrf: mgmt}
+        domain_lookup: yes
+        state: present

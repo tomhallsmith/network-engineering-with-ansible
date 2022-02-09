@@ -1,0 +1,8 @@
+all:
+  children:
+    routers:
+      hosts:
+        nrt00001.lab.local:
+        nrt00002.lab.local:
+        nrt00003.lab.local:
+        nrt00004.lab.local:

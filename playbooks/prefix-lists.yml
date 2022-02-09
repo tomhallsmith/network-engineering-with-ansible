@@ -1,0 +1,60 @@
+---
+- name: gather login information
+  hosts: 
+    #- nrt00001.lab.local
+    - nrt00002.lab.local
+  gather_facts: no
+  vars_prompt:
+    - name: username
+      prompt: Input username
+      private: no
+      result: username
+    - name: password
+      prompt: Input password
+      result: password
+
+  tasks:
+    - name: set login variables
+      set_fact:
+        ansible_user: "{{ username }}"
+        ansible_password: "{{ password }}"
+
+- name: find prefix list items
+  hosts: 
+    #- nrt00001.lab.local
+    - nrt00002.lab.local
+  gather_facts: no
+  vars:
+    prefix_list_name: bgp_in_pfl
+  tasks:
+    - name: get prefix list name
+      ios_command:
+        commands: show ip prefix-list {{ prefix_list_name }}
+      register: result
+    - name: display prefix list name
+      debug:
+        var: result.stdout
+    - name: set commit action as absent
+      set_fact:
+        commit_action: absent
+      when: result == ""
+    - name: set commit action as present
+      set_fact:
+        commit_action: present
+      when: result != ""
+    - name: print commit action
+      debug:
+        msg: commit_action.stdout
+    - name: get prefix-list name
+      set_fact:
+         pfl_name_from_router: "{{ result.stdout[0] | regex_findall('^ip prefix-list (.*):') | first }}"
+    - name: get sequence numbers and prefixes
+      set_fact:
+        prefix_list_values: "{{ result.stdout[0] | regex_findall('seq (\\d.) permit (.*)') }}"
+    - name: print the values
+      debug:
+        msg: "seq={{ prefix_item[0] }}, prefix={{ prefix_item[1] }}"
+      loop: "{{ prefix_list_values }}"
+      loop_control:
+        loop_var: prefix_item
+

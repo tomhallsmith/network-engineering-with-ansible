@@ -1,0 +1,34 @@
+---
+- name: gather login information
+  hosts: routers
+  gather_facts: no
+  vars_prompt:
+    - name: username
+      prompt: Input username
+      private: no
+      result: username
+    - name: password
+      prompt: Input password
+      result: password
+
+  tasks:
+    - name: set login variables
+      set_fact:
+        ansible_user: "{{ username }}"
+        ansible_password: "{{ password }}"
+
+- hosts: routers
+  gather_facts: no 
+  tasks:
+    - include_role:
+        name: cisco_ios
+    - name: print running cfg
+      debug:
+        var: running_cfg
+    - include_role:
+        name: gitlab_tree
+      vars:
+        page_num:  1
+    - name: print_result
+      debug:
+        var: gitlab_repo_file_list
